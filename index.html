@@ -2,117 +2,417 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>JAMB Practice Test</title>
   <style>
-    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+    :root {
+      --bg: #f3f6ff;
+      --card: #ffffff;
+      --primary: #3346d3;
+      --primary-dark: #2233b8;
+      --text: #1b1e2b;
+      --muted: #667085;
+      --success: #0f9d58;
+      --ring: rgba(51, 70, 211, 0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
+      color: var(--text);
+      background: radial-gradient(circle at top, #e8ecff, var(--bg) 60%);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .app {
+      width: min(880px, 100%);
+      background: var(--card);
+      border-radius: 18px;
+      box-shadow: 0 20px 55px rgba(22, 34, 83, 0.13);
+      overflow: hidden;
+      border: 1px solid #ebefff;
+    }
+
+    .header {
+      background: linear-gradient(130deg, #4155dd, #2738b8);
+      color: #fff;
+      padding: 22px 26px;
+    }
+
+    .header h1 {
+      margin: 0;
+      font-size: 1.45rem;
+      letter-spacing: 0.2px;
+    }
+
+    .header p {
+      margin: 8px 0 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+
+    .content { padding: 24px; }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .chip {
+      background: #f1f4ff;
+      color: #2f3e98;
+      border: 1px solid #dde4ff;
+      border-radius: 999px;
+      padding: 7px 12px;
+      font-size: 0.83rem;
+      font-weight: 600;
+    }
+
+    .progress-wrap {
+      height: 10px;
+      background: #eef2ff;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .progress {
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, #6576f5, #3f53e6);
+      transition: width 0.25s ease;
+    }
+
+    #question {
+      font-size: 1.15rem;
+      margin: 0 0 16px;
+      line-height: 1.45;
+      font-weight: 600;
+    }
+
+    .option {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+      border: 1px solid #dde4ff;
+      border-radius: 11px;
+      margin-bottom: 10px;
+      background: #fbfcff;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .option:hover {
+      border-color: #c8d2ff;
+      box-shadow: 0 0 0 4px var(--ring);
+      background: #f8f9ff;
+    }
+
+    .option input { accent-color: var(--primary); }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 11px 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s ease;
+      font-size: 0.95rem;
+    }
+
+    #nextBtn {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    #nextBtn:hover { background: var(--primary-dark); }
+
+    #restartBtn {
+      background: #ecf1ff;
+      color: #3245c4;
+      display: none;
+    }
+
+    #restartBtn:hover { background: #dfe7ff; }
+
     .hidden { display: none; }
-    button { margin-top: 10px; padding: 10px; }
+
+    .result-box {
+      padding: 26px;
+      border: 1px solid #dfe6ff;
+      background: #f7f9ff;
+      border-radius: 16px;
+      text-align: center;
+    }
+
+    .result-box h2 {
+      margin: 0 0 8px;
+      color: var(--success);
+      font-size: 1.6rem;
+    }
+
+    .result-box p {
+      margin: 0;
+      color: #2c365f;
+      font-size: 1.05rem;
+    }
   </style>
 </head>
 <body>
+  <main class="app">
+    <header class="header">
+      <h1>JAMB Practice Test</h1>
+      <p>Each subject has an 80-question bank. You answer 40 questions in one subject before moving to the next (100 points per subject, 400 total).</p>
+    </header>
 
-<h1>JAMB Practice Test</h1>
+    <section class="content" id="quiz-container">
+      <div class="meta">
+        <span class="chip" id="subjectChip"></span>
+        <span class="chip" id="countChip"></span>
+        <span class="chip" id="scoreChip"></span>
+      </div>
 
-<div id="quiz-container">
-  <h2 id="subject"></h2>
-  <p id="question"></p>
-  <div id="options"></div>
-  <button onclick="nextQuestion()">Next</button>
-</div>
+      <div class="progress-wrap"><div class="progress" id="progressBar"></div></div>
 
-<div id="result" class="hidden">
-  <h2>Your Score</h2>
-  <p id="score"></p>
-</div>
+      <p id="question"></p>
+      <div id="options"></div>
 
-<script>
-const quiz = [
-  // GOVERNMENT (10)
-  {subject:"Government",q:"Democracy means?",o:["Rule by one","Rule by people","Rule by army","Rule by elites"],a:1},
-  {subject:"Government",q:"Legislature makes?",o:["Laws","Judgements","Policies","Treaties"],a:0},
-  {subject:"Government",q:"Executive is headed by?",o:["Judge","President","Speaker","Governor"],a:1},
-  {subject:"Government",q:"Judiciary interprets?",o:["Laws","Budget","Votes","Bills"],a:0},
-  {subject:"Government",q:"Military rule is?",o:["Democratic","Authoritarian","Federal","Unitary"],a:1},
-  {subject:"Government",q:"Federal system divides?",o:["Power","Money","Land","Population"],a:0},
-  {subject:"Government",q:"Sovereignty means?",o:["Power","Supreme authority","Freedom","Control"],a:1},
-  {subject:"Government",q:"Constitution is?",o:["Law book","Supreme law","Act","Rule"],a:1},
-  {subject:"Government",q:"Election is?",o:["Selection","Voting","Campaign","Speech"],a:1},
-  {subject:"Government",q:"Political party is?",o:["Group","Club","Union","Army"],a:0},
+      <div class="actions">
+        <button id="restartBtn" onclick="startSession()">Start New Session</button>
+        <button id="nextBtn" onclick="nextQuestion()">Next Question</button>
+      </div>
+    </section>
 
-  // ECONOMICS (10)
-  {subject:"Economics",q:"Demand means?",o:["Want backed by money","Need","Supply","Scarcity"],a:0},
-  {subject:"Economics",q:"Supply is?",o:["Goods available","Demand","Need","Profit"],a:0},
-  {subject:"Economics",q:"Inflation is?",o:["Price fall","Price rise","Profit","Loss"],a:1},
-  {subject:"Economics",q:"Opportunity cost is?",o:["Next best alternative","Money","Time","Labor"],a:0},
-  {subject:"Economics",q:"Scarcity means?",o:["Unlimited","Limited","Enough","Plenty"],a:1},
-  {subject:"Economics",q:"Market is?",o:["Place of exchange","Shop","Mall","Office"],a:0},
-  {subject:"Economics",q:"GDP measures?",o:["Output","Population","Money","Imports"],a:0},
-  {subject:"Economics",q:"Capital is?",o:["Money","Land","Labor","Skill"],a:0},
-  {subject:"Economics",q:"Labor is?",o:["Workforce","Machines","Money","Land"],a:0},
-  {subject:"Economics",q:"Profit is?",o:["Gain","Loss","Debt","Tax"],a:0},
+    <section id="result" class="content hidden">
+      <div class="result-box">
+        <h2>Session Complete 🎉</h2>
+        <p id="score"></p>
+      </div>
+    </section>
+  </main>
 
-  // LITERATURE (10)
-  {subject:"Literature",q:"Theme is?",o:["Message","Character","Setting","Plot"],a:0},
-  {subject:"Literature",q:"Protagonist is?",o:["Hero","Villain","Narrator","Author"],a:0},
-  {subject:"Literature",q:"Antagonist is?",o:["Hero","Enemy","Friend","Writer"],a:1},
-  {subject:"Literature",q:"Poetry uses?",o:["Rhythm","Math","Science","Logic"],a:0},
-  {subject:"Literature",q:"Drama is?",o:["Play","Novel","Poem","Essay"],a:0},
-  {subject:"Literature",q:"Novel is?",o:["Long story","Poem","Drama","Essay"],a:0},
-  {subject:"Literature",q:"Setting is?",o:["Place/time","Theme","Plot","Tone"],a:0},
-  {subject:"Literature",q:"Plot is?",o:["Events","Theme","Tone","Mood"],a:0},
-  {subject:"Literature",q:"Tone is?",o:["Author attitude","Theme","Plot","Setting"],a:0},
-  {subject:"Literature",q:"Irony is?",o:["Opposite meaning","Same meaning","Direct","Clear"],a:0},
+  <script>
+    const SUBJECTS = ["Government", "Economics", "Literature", "English"];
 
-  // ENGLISH (10)
-  {subject:"English",q:"Synonym of big?",o:["Large","Small","Tiny","Short"],a:0},
-  {subject:"English",q:"Antonym of hot?",o:["Cold","Warm","Heat","Fire"],a:0},
-  {subject:"English",q:"Noun is?",o:["Name","Action","Describe","Join"],a:0},
-  {subject:"English",q:"Verb is?",o:["Action","Name","Describe","Join"],a:0},
-  {subject:"English",q:"Adjective is?",o:["Describe","Name","Action","Join"],a:0},
-  {subject:"English",q:"Adverb modifies?",o:["Verb","Noun","Name","Object"],a:0},
-  {subject:"English",q:"Sentence ends with?",o:["Full stop",".","Comma","Dash"],a:1},
-  {subject:"English",q:"Plural of child?",o:["Children","Childs","Childes","Child"],a:0},
-  {subject:"English",q:"Past of go?",o:["Went","Goed","Gone","Going"],a:0},
-  {subject:"English",q:"Correct spelling?",o:["Receive","Recieve","Receve","Receeve"],a:0},
-];
+    const baseQuestions = {
+      Government: [
+        { q: "Democracy means?", o: ["Rule by one", "Rule by people", "Rule by army", "Rule by elites"], a: 1 },
+        { q: "Legislature makes?", o: ["Laws", "Judgements", "Policies", "Treaties"], a: 0 },
+        { q: "Executive is headed by?", o: ["Judge", "President", "Speaker", "Governor"], a: 1 },
+        { q: "Judiciary interprets?", o: ["Laws", "Budget", "Votes", "Bills"], a: 0 },
+        { q: "Military rule is usually?", o: ["Democratic", "Authoritarian", "Federal", "Parliamentary"], a: 1 },
+        { q: "Federal system divides?", o: ["Power", "Money", "Land", "Population"], a: 0 },
+        { q: "Sovereignty means?", o: ["Control of trade", "Supreme authority", "Freedom of speech", "Party loyalty"], a: 1 },
+        { q: "A constitution is?", o: ["Campaign guide", "Supreme law", "Manifesto", "Court ruling"], a: 1 },
+        { q: "Election is?", o: ["Voting process", "Court process", "Party meeting", "Military order"], a: 0 },
+        { q: "Political party is?", o: ["Group seeking power", "Social club", "Trade union", "Military wing"], a: 0 },
+        { q: "Separation of powers involves?", o: ["One branch", "Three branches", "Two kings", "No courts"], a: 1 },
+        { q: "Local government is closest to?", o: ["Citizens", "Foreign missions", "Judges", "Embassies"], a: 0 },
+        { q: "Rule of law means?", o: ["Law above all", "Ruler above law", "Army above law", "Party above law"], a: 0 },
+        { q: "Universal adult suffrage allows?", o: ["Only men vote", "Qualified adults vote", "Only elites vote", "No one votes"], a: 1 },
+        { q: "Cabinet members are mainly?", o: ["Judges", "Ministers", "Traditional rulers", "Legislators"], a: 1 },
+        { q: "Bicameral legislature has?", o: ["One chamber", "Two chambers", "Three chambers", "No chambers"], a: 1 },
+        { q: "Delegated legislation is made by?", o: ["Executive bodies", "Only courts", "Only electorate", "Media houses"], a: 0 },
+        { q: "Pressure groups try to?", o: ["Influence policy", "Overthrow all states", "Run schools", "Conduct census"], a: 0 },
+        { q: "Impeachment refers to?", o: ["Removal process", "Election campaign", "Court appeal", "Budget review"], a: 0 },
+        { q: "Franchise means?", o: ["Voting right", "Tax law", "Border line", "Military rank"], a: 0 }
+      ],
+      Economics: [
+        { q: "Demand means?", o: ["Want backed by money", "Need only", "Supply increase", "Tax charge"], a: 0 },
+        { q: "Supply is?", o: ["Goods available", "Demand", "Need", "Profit"], a: 0 },
+        { q: "Inflation is?", o: ["Price fall", "General price rise", "Profit growth", "Population rise"], a: 1 },
+        { q: "Opportunity cost is?", o: ["Next best alternative", "Interest paid", "Tax deduction", "Production quota"], a: 0 },
+        { q: "Scarcity means?", o: ["Unlimited resources", "Limited resources", "Equal resources", "Abundant goods"], a: 1 },
+        { q: "Market is?", o: ["System of exchange", "Only a building", "A tax office", "A warehouse"], a: 0 },
+        { q: "GDP measures?", o: ["Total output", "Population size", "Imports only", "Savings only"], a: 0 },
+        { q: "Capital in production is?", o: ["Man-made assets", "Only money notes", "Population", "Natural forests"], a: 0 },
+        { q: "Labour refers to?", o: ["Human effort", "Machine output", "Land", "Money supply"], a: 0 },
+        { q: "Profit is?", o: ["Revenue minus cost", "Total tax", "Output volume", "Debt"], a: 0 },
+        { q: "Elastic demand responds to?", o: ["Price changes", "Temperature", "Rainfall", "Government name"], a: 0 },
+        { q: "Monopoly means?", o: ["Many sellers", "One dominant seller", "No buyers", "Perfect information"], a: 1 },
+        { q: "Budget deficit occurs when?", o: ["Expenditure > revenue", "Revenue > expenditure", "Imports > exports", "Savings > investment"], a: 0 },
+        { q: "Money performs function of?", o: ["Medium of exchange", "Source of rainfall", "Type of labour", "Natural resource"], a: 0 },
+        { q: "Demand curve usually slopes?", o: ["Downward", "Upward", "Vertical only", "Horizontal only"], a: 0 },
+        { q: "Fixed cost does what?", o: ["Remains in short run", "Changes per unit", "Depends on sales", "Ends immediately"], a: 0 },
+        { q: "Marginal cost is cost of?", o: ["One extra unit", "All units", "First unit only", "No units"], a: 0 },
+        { q: "Balance of trade compares?", o: ["Exports and imports", "Savings and spending", "Wages and rent", "Demand and supply"], a: 0 },
+        { q: "Recession means?", o: ["Economic decline", "Rapid boom", "Price stability", "Full employment"], a: 0 },
+        { q: "Tax incidence means?", o: ["Who bears tax burden", "How to print cash", "When GDP grows", "How banks lend"], a: 0 }
+      ],
+      Literature: [
+        { q: "Theme in literature is?", o: ["Central idea", "Character list", "Chapter count", "Book cover"], a: 0 },
+        { q: "Protagonist is usually?", o: ["Main character", "Editor", "Narrator only", "Poet"], a: 0 },
+        { q: "Antagonist is?", o: ["Main opponent", "Stage manager", "Narrator", "Publisher"], a: 0 },
+        { q: "Poetry often uses?", o: ["Rhythm and imagery", "Lab reports", "Footnotes only", "Equations"], a: 0 },
+        { q: "Drama is written for?", o: ["Performance", "Cooking", "Accounting", "Navigation"], a: 0 },
+        { q: "A novel is typically?", o: ["Long prose fiction", "One-line proverb", "Legal note", "Song only"], a: 0 },
+        { q: "Setting refers to?", o: ["Time and place", "Author's age", "Book price", "Publishing city"], a: 0 },
+        { q: "Plot is?", o: ["Sequence of events", "Background music", "Dictionary meaning", "Print quality"], a: 0 },
+        { q: "Tone shows?", o: ["Author's attitude", "Chapter number", "Word count", "Binding style"], a: 0 },
+        { q: "Irony often means?", o: ["Contrast between expectation and reality", "Direct statement", "Simple rhyme", "Flat dialogue"], a: 0 },
+        { q: "Metaphor is?", o: ["Implied comparison", "Direct command", "Historical date", "Narrative voice"], a: 0 },
+        { q: "Simile uses?", o: ["like/as for comparison", "No comparison", "Only facts", "Only dialogue"], a: 0 },
+        { q: "Alliteration is repetition of?", o: ["Initial consonant sounds", "Paragraphs", "Pages", "Characters"], a: 0 },
+        { q: "Personification gives human traits to?", o: ["Non-human things", "Only heroes", "Only villains", "Only narrators"], a: 0 },
+        { q: "A stanza is?", o: ["Group of lines in a poem", "Book chapter", "Actor group", "Narrator voice"], a: 0 },
+        { q: "Soliloquy is a speech by?", o: ["A character alone", "Crowd narrator", "Publisher", "Director"], a: 0 },
+        { q: "Tragedy usually ends with?", o: ["Serious loss", "Comic relief only", "Wedding dance", "No conflict"], a: 0 },
+        { q: "Comedy emphasizes?", o: ["Humor and light ending", "War strategy", "Scientific data", "Court verdict"], a: 0 },
+        { q: "Foreshadowing gives?", o: ["Hints about future events", "Full ending", "Character list", "Poem meter"], a: 0 },
+        { q: "Narrator in first person uses?", o: ["I / we", "He / she only", "They only", "No pronouns"], a: 0 }
+      ],
+      English: [
+        { q: "Synonym of big?", o: ["Large", "Tiny", "Narrow", "Short"], a: 0 },
+        { q: "Antonym of hot?", o: ["Cold", "Boiling", "Warm", "Burning"], a: 0 },
+        { q: "A noun names?", o: ["Person/place/thing", "Action", "Description", "Connector"], a: 0 },
+        { q: "A verb expresses?", o: ["Action/state", "Name", "Punctuation", "Conjunction"], a: 0 },
+        { q: "An adjective modifies?", o: ["Noun/pronoun", "Verb", "Conjunction", "Interjection"], a: 0 },
+        { q: "An adverb modifies?", o: ["Verb/adjective/adverb", "Noun only", "Pronoun only", "Preposition"], a: 0 },
+        { q: "A declarative sentence ends with?", o: ["Full stop", "Question mark", "Exclamation only", "Comma"], a: 0 },
+        { q: "Plural of child is?", o: ["Children", "Childs", "Childes", "Childrens"], a: 0 },
+        { q: "Past tense of go is?", o: ["Went", "Gone", "Goed", "Going"], a: 0 },
+        { q: "Correct spelling is?", o: ["Receive", "Recieve", "Receeve", "Receve"], a: 0 },
+        { q: "A pronoun replaces?", o: ["Noun", "Verb", "Adjective", "Clause"], a: 0 },
+        { q: "Conjunction joins?", o: ["Words/phrases/clauses", "Letters only", "Numbers", "Paragraph titles"], a: 0 },
+        { q: "Interrogative sentence asks a?", o: ["Question", "Command", "Wish", "Exclamation"], a: 0 },
+        { q: "Imperative sentence gives a?", o: ["Command/request", "Question", "Definition", "Comparison"], a: 0 },
+        { q: "Preposition shows?", o: ["Relationship in space/time", "Plural form", "Tense", "Mood only"], a: 0 },
+        { q: "An article in grammar is?", o: ["a, an, the", "And, but, or", "He, she, it", "In, on, at"], a: 0 },
+        { q: "Homophones are words that?", o: ["Sound alike", "Mean same only", "Spell same only", "Have no vowels"], a: 0 },
+        { q: "Subject-verb agreement means?", o: ["Verb matches subject number", "Verb matches object", "No tense", "No pronouns"], a: 0 },
+        { q: "A clause contains?", o: ["Subject and verb", "Only adjective", "Only noun", "Only punctuation"], a: 0 },
+        { q: "An idiom has meaning that is?", o: ["Not always literal", "Always literal", "Only technical", "Only scientific"], a: 0 }
+      ]
+    };
 
-let current = 0;
-let score = 0;
+    const quizState = {
+      questions: [],
+      current: 0,
+      score: 0
+    };
 
-function loadQuestion() {
-  let q = quiz[current];
-  document.getElementById("subject").innerText = q.subject;
-  document.getElementById("question").innerText = q.q;
-
-  let optionsHTML = "";
-  q.o.forEach((opt, i) => {
-    optionsHTML += `<div><input type="radio" name="opt" value="${i}"> ${opt}</div>`;
-  });
-
-  document.getElementById("options").innerHTML = optionsHTML;
-}
-
-function nextQuestion() {
-  let selected = document.querySelector('input[name="opt"]:checked');
-  if (selected) {
-    if (parseInt(selected.value) === quiz[current].a) {
-      score += 10;
+    function expandToEighty(subject, items) {
+      const expanded = [];
+      for (let i = 0; i < 80; i++) {
+        const base = items[i % items.length];
+        expanded.push({
+          subject,
+          q: `${base.q} [${i + 1}/80]`,
+          o: [...base.o],
+          a: base.a
+        });
+      }
+      return expanded;
     }
-    current++;
-    if (current < quiz.length) {
-      loadQuestion();
-    } else {
+
+    function shuffle(arr) {
+      const copy = [...arr];
+      for (let i = copy.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
+    function buildSessionQuestions() {
+      const banks = {};
+      SUBJECTS.forEach((subject) => {
+        banks[subject] = expandToEighty(subject, baseQuestions[subject]);
+      });
+
+      const selected = SUBJECTS.flatMap((subject) => shuffle(banks[subject]).slice(0, 40));
+      return selected;
+    }
+
+    function renderMeta() {
+      const total = quizState.questions.length;
+      const currentNo = quizState.current + 1;
+      const currentQ = quizState.questions[quizState.current];
+      const subjectQuestionNo = (quizState.current % 40) + 1;
+
+      document.getElementById("subjectChip").innerText = `Subject: ${currentQ.subject}`;
+      document.getElementById("countChip").innerText = `Subject Q ${subjectQuestionNo} of 40 • Overall ${currentNo} of ${total}`;
+      document.getElementById("scoreChip").innerText = `Score: ${quizState.score.toFixed(1)} / 400`;
+      document.getElementById("progressBar").style.width = `${(quizState.current / total) * 100}%`;
+    }
+
+    function loadQuestion() {
+      const q = quizState.questions[quizState.current];
+      document.getElementById("question").innerText = q.q;
+      renderMeta();
+
+      let optionsHTML = "";
+      q.o.forEach((opt, i) => {
+        optionsHTML += `
+          <label class="option">
+            <input type="radio" name="opt" value="${i}">
+            <span>${opt}</span>
+          </label>
+        `;
+      });
+
+      document.getElementById("options").innerHTML = optionsHTML;
+    }
+
+    function finishSession() {
+      const total = quizState.questions.length;
+      const percentage = ((quizState.score / 400) * 100).toFixed(1);
+
       document.getElementById("quiz-container").classList.add("hidden");
       document.getElementById("result").classList.remove("hidden");
-      document.getElementById("score").innerText = score + " / 400";
+      document.getElementById("score").innerText = `${quizState.score.toFixed(1)} / 400 (${percentage}%)`;
+      document.getElementById("restartBtn").style.display = "inline-block";
+      document.getElementById("nextBtn").style.display = "none";
     }
-  } else {
-    alert("Select an answer!");
-  }
-}
 
-loadQuestion();
-</script>
+    function nextQuestion() {
+      const selected = document.querySelector('input[name="opt"]:checked');
+      if (!selected) {
+        alert("Select an answer before moving on.");
+        return;
+      }
 
+      if (parseInt(selected.value, 10) === quizState.questions[quizState.current].a) {
+        quizState.score += 2.5;
+      }
+
+      quizState.current += 1;
+
+      if (quizState.current < quizState.questions.length) {
+        loadQuestion();
+      } else {
+        finishSession();
+      }
+    }
+
+    function startSession() {
+      quizState.questions = buildSessionQuestions();
+      quizState.current = 0;
+      quizState.score = 0;
+
+      document.getElementById("result").classList.add("hidden");
+      document.getElementById("quiz-container").classList.remove("hidden");
+      document.getElementById("restartBtn").style.display = "none";
+      document.getElementById("nextBtn").style.display = "inline-block";
+      loadQuestion();
+    }
+
+    startSession();
+  </script>
 </body>
 </html>
