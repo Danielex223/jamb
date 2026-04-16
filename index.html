@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>JAMB Practice Test</title>
+  <style>
+    body { font-family: Arial; max-width: 600px; margin: auto; padding: 20px; }
+    .hidden { display: none; }
+    button { margin-top: 10px; padding: 10px; }
+  </style>
+</head>
+<body>
+
+<h1>JAMB Practice Test</h1>
+
+<div id="quiz-container">
+  <h2 id="subject"></h2>
+  <p id="question"></p>
+  <div id="options"></div>
+  <button onclick="nextQuestion()">Next</button>
+</div>
+
+<div id="result" class="hidden">
+  <h2>Your Score</h2>
+  <p id="score"></p>
+</div>
+
+<script>
+const quiz = [
+  // GOVERNMENT (10)
+  {subject:"Government",q:"Democracy means?",o:["Rule by one","Rule by people","Rule by army","Rule by elites"],a:1},
+  {subject:"Government",q:"Legislature makes?",o:["Laws","Judgements","Policies","Treaties"],a:0},
+  {subject:"Government",q:"Executive is headed by?",o:["Judge","President","Speaker","Governor"],a:1},
+  {subject:"Government",q:"Judiciary interprets?",o:["Laws","Budget","Votes","Bills"],a:0},
+  {subject:"Government",q:"Military rule is?",o:["Democratic","Authoritarian","Federal","Unitary"],a:1},
+  {subject:"Government",q:"Federal system divides?",o:["Power","Money","Land","Population"],a:0},
+  {subject:"Government",q:"Sovereignty means?",o:["Power","Supreme authority","Freedom","Control"],a:1},
+  {subject:"Government",q:"Constitution is?",o:["Law book","Supreme law","Act","Rule"],a:1},
+  {subject:"Government",q:"Election is?",o:["Selection","Voting","Campaign","Speech"],a:1},
+  {subject:"Government",q:"Political party is?",o:["Group","Club","Union","Army"],a:0},
+
+  // ECONOMICS (10)
+  {subject:"Economics",q:"Demand means?",o:["Want backed by money","Need","Supply","Scarcity"],a:0},
+  {subject:"Economics",q:"Supply is?",o:["Goods available","Demand","Need","Profit"],a:0},
+  {subject:"Economics",q:"Inflation is?",o:["Price fall","Price rise","Profit","Loss"],a:1},
+  {subject:"Economics",q:"Opportunity cost is?",o:["Next best alternative","Money","Time","Labor"],a:0},
+  {subject:"Economics",q:"Scarcity means?",o:["Unlimited","Limited","Enough","Plenty"],a:1},
+  {subject:"Economics",q:"Market is?",o:["Place of exchange","Shop","Mall","Office"],a:0},
+  {subject:"Economics",q:"GDP measures?",o:["Output","Population","Money","Imports"],a:0},
+  {subject:"Economics",q:"Capital is?",o:["Money","Land","Labor","Skill"],a:0},
+  {subject:"Economics",q:"Labor is?",o:["Workforce","Machines","Money","Land"],a:0},
+  {subject:"Economics",q:"Profit is?",o:["Gain","Loss","Debt","Tax"],a:0},
+
+  // LITERATURE (10)
+  {subject:"Literature",q:"Theme is?",o:["Message","Character","Setting","Plot"],a:0},
+  {subject:"Literature",q:"Protagonist is?",o:["Hero","Villain","Narrator","Author"],a:0},
+  {subject:"Literature",q:"Antagonist is?",o:["Hero","Enemy","Friend","Writer"],a:1},
+  {subject:"Literature",q:"Poetry uses?",o:["Rhythm","Math","Science","Logic"],a:0},
+  {subject:"Literature",q:"Drama is?",o:["Play","Novel","Poem","Essay"],a:0},
+  {subject:"Literature",q:"Novel is?",o:["Long story","Poem","Drama","Essay"],a:0},
+  {subject:"Literature",q:"Setting is?",o:["Place/time","Theme","Plot","Tone"],a:0},
+  {subject:"Literature",q:"Plot is?",o:["Events","Theme","Tone","Mood"],a:0},
+  {subject:"Literature",q:"Tone is?",o:["Author attitude","Theme","Plot","Setting"],a:0},
+  {subject:"Literature",q:"Irony is?",o:["Opposite meaning","Same meaning","Direct","Clear"],a:0},
+
+  // ENGLISH (10)
+  {subject:"English",q:"Synonym of big?",o:["Large","Small","Tiny","Short"],a:0},
+  {subject:"English",q:"Antonym of hot?",o:["Cold","Warm","Heat","Fire"],a:0},
+  {subject:"English",q:"Noun is?",o:["Name","Action","Describe","Join"],a:0},
+  {subject:"English",q:"Verb is?",o:["Action","Name","Describe","Join"],a:0},
+  {subject:"English",q:"Adjective is?",o:["Describe","Name","Action","Join"],a:0},
+  {subject:"English",q:"Adverb modifies?",o:["Verb","Noun","Name","Object"],a:0},
+  {subject:"English",q:"Sentence ends with?",o:["Full stop",".","Comma","Dash"],a:1},
+  {subject:"English",q:"Plural of child?",o:["Children","Childs","Childes","Child"],a:0},
+  {subject:"English",q:"Past of go?",o:["Went","Goed","Gone","Going"],a:0},
+  {subject:"English",q:"Correct spelling?",o:["Receive","Recieve","Receve","Receeve"],a:0},
+];
+
+let current = 0;
+let score = 0;
+
+function loadQuestion() {
+  let q = quiz[current];
+  document.getElementById("subject").innerText = q.subject;
+  document.getElementById("question").innerText = q.q;
+
+  let optionsHTML = "";
+  q.o.forEach((opt, i) => {
+    optionsHTML += `<div><input type="radio" name="opt" value="${i}"> ${opt}</div>`;
+  });
+
+  document.getElementById("options").innerHTML = optionsHTML;
+}
+
+function nextQuestion() {
+  let selected = document.querySelector('input[name="opt"]:checked');
+  if (selected) {
+    if (parseInt(selected.value) === quiz[current].a) {
+      score += 10;
+    }
+    current++;
+    if (current < quiz.length) {
+      loadQuestion();
+    } else {
+      document.getElementById("quiz-container").classList.add("hidden");
+      document.getElementById("result").classList.remove("hidden");
+      document.getElementById("score").innerText = score + " / 400";
+    }
+  } else {
+    alert("Select an answer!");
+  }
+}
+
+loadQuestion();
+</script>
+
+</body>
+</html>
