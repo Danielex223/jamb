@@ -177,7 +177,7 @@
   <main class="app">
     <header class="header">
       <h1>JAMB Practice Test</h1>
-      <p>Each subject now has 80 questions in the bank; every session picks a random 40 per subject.</p>
+      <p>Each subject has an 80-question bank. You answer 40 questions in one subject before moving to the next (100 points per subject, 400 total).</p>
     </header>
 
     <section class="content" id="quiz-container">
@@ -336,17 +336,18 @@
       });
 
       const selected = SUBJECTS.flatMap((subject) => shuffle(banks[subject]).slice(0, 40));
-      return shuffle(selected);
+      return selected;
     }
 
     function renderMeta() {
       const total = quizState.questions.length;
       const currentNo = quizState.current + 1;
       const currentQ = quizState.questions[quizState.current];
+      const subjectQuestionNo = (quizState.current % 40) + 1;
 
       document.getElementById("subjectChip").innerText = `Subject: ${currentQ.subject}`;
-      document.getElementById("countChip").innerText = `Question ${currentNo} of ${total}`;
-      document.getElementById("scoreChip").innerText = `Score: ${quizState.score}`;
+      document.getElementById("countChip").innerText = `Subject Q ${subjectQuestionNo} of 40 • Overall ${currentNo} of ${total}`;
+      document.getElementById("scoreChip").innerText = `Score: ${quizState.score.toFixed(1)} / 400`;
       document.getElementById("progressBar").style.width = `${(quizState.current / total) * 100}%`;
     }
 
@@ -370,11 +371,11 @@
 
     function finishSession() {
       const total = quizState.questions.length;
-      const percentage = ((quizState.score / total) * 100).toFixed(1);
+      const percentage = ((quizState.score / 400) * 100).toFixed(1);
 
       document.getElementById("quiz-container").classList.add("hidden");
       document.getElementById("result").classList.remove("hidden");
-      document.getElementById("score").innerText = `${quizState.score} / ${total} (${percentage}%)`;
+      document.getElementById("score").innerText = `${quizState.score.toFixed(1)} / 400 (${percentage}%)`;
       document.getElementById("restartBtn").style.display = "inline-block";
       document.getElementById("nextBtn").style.display = "none";
     }
@@ -387,7 +388,7 @@
       }
 
       if (parseInt(selected.value, 10) === quizState.questions[quizState.current].a) {
-        quizState.score += 1;
+        quizState.score += 2.5;
       }
 
       quizState.current += 1;
